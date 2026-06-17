@@ -43,29 +43,22 @@ If you already have one, skip to step 2.
 
 ![MQTT integration with Mosquitto](./images/mqtt-integration.png) <!-- TODO -->
 
-### 2. Find your Home Assistant IP
-
-**Settings → System → Network** — note the IP of the interface Pila will reach (usually `eth0` / `end0` or `wlan0`).
-
-![HA network settings](./images/ha-network.png) <!-- TODO -->
-
-### 3. Create a dedicated Home Assistant user (recommended)
-
-**Settings → People → Users → Add User**. Username e.g. `pila`, set a password. Leave admin disabled.
-
-### 4. Connect on the Pila screen
+### 2. Connect on the Pila screen
 
 On your Pila:
 
 1. Open **Settings → Home Assistant**
-2. Enter the HA IP, username, and password
-3. Tap **Save & Connect**
+2. The **IP Address** field is pre-populated — Pila does an mDNS sweep for `homeassistant.local` on boot and fills in what it finds. If the address looks right, use it. Otherwise, find it manually in HA under **Settings → System → Network** and overwrite.
+3. Enter your Home Assistant username and password
+4. Tap **Save & Connect**
 
 ![Pila Home Assistant screen](./images/pila-ha-screen.png) <!-- TODO -->
 
 The status indicator turns green when connected. The connection persists across reboots.
 
-### 5. Verify
+> 💡 **Optional: dedicated HA user.** For tighter security, create a non-admin HA user just for Pila (**Settings → People → Users → Add User**) and use those credentials in step 3. Your normal credentials work fine otherwise.
+
+### 3. Verify
 
 In Home Assistant, **Settings → Devices & services → MQTT** should show your Pila with all entities listed below.
 
@@ -73,51 +66,49 @@ In Home Assistant, **Settings → Devices & services → MQTT** should show your
 
 Entity IDs are `sensor.pila_*` / `switch.pila_*` / `select.pila_*` by default. If you renamed your Pila in the app, the slug changes accordingly.
 
-### Power (instantaneous, watts)
+### Power (instantaneous)
 
-| Name | Description |
-|---|---|
-| Total Usage | Total load currently being powered by the Pila (battery + grid + solar combined). |
-| Battery Charge / Discharge Rate | Signed power into/out of the battery pack. Positive = charging, negative = discharging. |
-| Total Solar Input | Power currently arriving from solar. |
-| Total AC Input | Power currently flowing in from the grid. |
+| Name | Unit | Description |
+|---|---|---|
+| Total Usage | W | Total load currently being powered by the Pila (battery + grid + solar combined). |
+| Battery Charge / Discharge Rate | W | Signed power into/out of the battery pack. Positive = charging, negative = discharging. |
+| Total Solar Input | W | Power currently arriving from solar. |
+| Total AC Input | W | Power currently flowing in from the grid. |
 
 ### Battery
 
-| Name | Description |
-|---|---|
-| Battery SOC | State of charge, 0–100 %. |
-| Battery energy remaining | Energy left in the pack at the current state of charge, in Wh. |
-| Backup Forecast | Estimated hours of backup runtime at current load. |
-| Pila Status | Human-readable summary. One of: `Solar powering devices`, `Battery powering devices`, `Charging from solar`, `Charging from utility`, `Utility powering devices`, `Idle`. |
+| Name | Unit | Description |
+|---|---|---|
+| Battery SOC | % | State of charge, 0–100. |
+| Battery energy remaining | Wh | Energy left in the pack at the current state of charge. |
+| Backup Forecast | h | Estimated hours of backup runtime at current load. |
+| Pila Status | — | Human-readable summary. One of: `Solar powering devices`, `Battery powering devices`, `Charging from solar`, `Charging from utility`, `Utility powering devices`, `Idle`. |
 
 ### Grid
 
-| Name | Description |
-|---|---|
-| Grid Status | One of: `on_grid` (connected to and using utility), `off_grid` (islanded — running on battery/solar), `idle_off_grid` (no grid and no AC output), `unknown`. |
+| Name | Unit | Description |
+|---|---|---|
+| Grid Status | — | One of: `on_grid` (connected to and using utility), `off_grid` (islanded — running on battery/solar), `idle_off_grid` (no grid and no AC output), `unknown`. |
 
 ### Lifetime energy totals
 
-Cumulative `total_increasing` counters in Wh, designed for the Energy Dashboard.
+Cumulative `total_increasing` counters designed for the Energy Dashboard.
 
-| Name | Description |
-|---|---|
-| Pila Lifetime Import | Total energy imported from the grid through Pila over the device's lifetime. |
-| Battery Lifetime Charge | Total energy charged into the battery pack over its lifetime. |
-| Battery Lifetime Discharge | Total energy discharged from the battery pack over its lifetime. |
-
-> **Coming soon:** **Pila Lifetime Export** (ships with backfeeding) and **Lifetime Solar Production** (ships with solar production reporting).
+| Name | Unit | Description |
+|---|---|---|
+| Pila Lifetime Import | Wh | Total energy imported from the grid through Pila over the device's lifetime. |
+| Battery Lifetime Charge | Wh | Total energy charged into the battery pack over its lifetime. |
+| Battery Lifetime Discharge | Wh | Total energy discharged from the battery pack over its lifetime. |
 
 ### Per-outlet (one set per outlet)
 
 For each AC and USB-C outlet:
 
-| Entity | Type | Description |
-|---|---|---|
-| `{outlet name}` | switch | Turn the outlet on or off. State reflects relay state. |
-| `{outlet name} power` | sensor (W) | Power currently flowing through the outlet. |
-| `{outlet name} Lifetime Energy` | sensor (Wh) | Cumulative energy delivered through the outlet. |
+| Entity | Type | Unit | Description |
+|---|---|---|---|
+| `{outlet name}` | switch | — | Turn the outlet on or off. State reflects relay state. |
+| `{outlet name} power` | sensor | W | Power currently flowing through the outlet. |
+| `{outlet name} Lifetime Energy` | sensor | Wh | Cumulative energy delivered through the outlet. |
 
 **Outlet naming.** If you've assigned an appliance name to an outlet in the Pila app (e.g. "Fridge"), Home Assistant uses that name. Otherwise it falls back to the orientation default ("USB Left", "USB Middle", "USB Right", "AC 1", etc.). Renaming an outlet in the Pila app updates the friendly name in HA but **does not change the entity_id** — edit the entity directly in HA if you want the slug to change.
 
@@ -136,8 +127,6 @@ Wire Pila into [Settings → Dashboards → Energy](https://www.home-assistant.i
 | Grid consumption | Pila Lifetime Import |
 | Battery in (charge) | Battery Lifetime Charge |
 | Battery out (discharge) | Battery Lifetime Discharge |
-| Return to grid (export) | *coming soon — backfeeding* |
-| Solar production | *coming soon — solar reporting* |
 
 The Energy Dashboard uses cumulative counters, not instantaneous power. Don't wire `Battery Charge / Discharge Rate` here.
 
