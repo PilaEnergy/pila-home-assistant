@@ -2,10 +2,6 @@
 
 Monitor and control your [Pila](https://pilaenergy.com) battery from [Home Assistant](https://www.home-assistant.io/) over MQTT.
 
-> ⚠️ **Unofficial integration.** Pila does not currently have "Works with Home Assistant" certification. This integration uses MQTT discovery against a broker that you run on your Home Assistant instance — bring your own broker. The [Mosquitto add-on](https://www.home-assistant.io/integrations/mqtt/#setting-up-a-broker) is recommended.
-
-> ℹ️ **One Pila per Home Assistant instance.** Each Home Assistant instance can connect to a single Pila device. Mesh-level views (multiple Pilas as a single site) are not exposed through this integration today.
-
 ## Contents
 
 - [Compatibility](#compatibility)
