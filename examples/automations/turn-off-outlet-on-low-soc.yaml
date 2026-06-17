@@ -1,18 +1,18 @@
 # Turn off a non-essential outlet when battery drops below 30% during a grid outage.
-# Replace `switch.pila_ac_2` with whichever outlet is your "non-essential" one.
+# Replace `switch.your_pila_ac_2` with whichever outlet is your "non-essential" one.
 
 alias: Pila shed non-essential load on low battery
 description: Turn off non-essential AC outlet when off-grid and SOC < 30%
 trigger:
   - platform: numeric_state
-    entity_id: sensor.pila_battery_soc
+    entity_id: sensor.your_pila_battery_soc
     below: 30
 condition:
   - condition: state
-    entity_id: sensor.pila_grid_status
+    entity_id: sensor.your_pila_grid_status
     state: off_grid
 action:
   - service: switch.turn_off
     target:
-      entity_id: switch.pila_ac_2
+      entity_id: switch.your_pila_ac_2
 mode: single

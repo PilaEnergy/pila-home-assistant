@@ -8,17 +8,17 @@ cards:
     title: USB Power History
     hours_to_show: 1
     entities:
-      - entity: sensor.pila_usb_3_power
+      - entity: sensor.your_pila_usb_3_power
         name: Left
-      - entity: sensor.pila_usb_1_power
+      - entity: sensor.your_pila_usb_1_power
         name: Middle
-      - entity: sensor.pila_usb_2_power
+      - entity: sensor.your_pila_usb_2_power
         name: Right
   - type: entities
     entities:
-      - entity: sensor.pila_usb_3_power
+      - entity: sensor.your_pila_usb_3_power
         name: Left USB Power
-      - entity: sensor.pila_usb_1_power
+      - entity: sensor.your_pila_usb_1_power
         name: Middle USB Power
-      - entity: sensor.pila_usb_2_power
+      - entity: sensor.your_pila_usb_2_power
         name: Right USB Power

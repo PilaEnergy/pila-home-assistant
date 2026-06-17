@@ -5,7 +5,7 @@ alias: Pila low battery notification
 description: Send a notification when battery drops below 20%
 trigger:
   - platform: numeric_state
-    entity_id: sensor.pila_battery_soc
+    entity_id: sensor.your_pila_battery_soc
     below: 20
     for:
       minutes: 1
@@ -14,6 +14,6 @@ action:
     data:
       title: Pila battery low
       message: >
-        Pila is at {{ states('sensor.pila_battery_soc') }}%.
-        Estimated {{ states('sensor.pila_backup_forecast') }} hours of backup remaining.
+        Pila is at {{ states('sensor.your_pila_battery_soc') }}%.
+        Estimated {{ states('sensor.your_pila_backup_forecast') }} hours of backup remaining.
 mode: single

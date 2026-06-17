@@ -64,7 +64,9 @@ In Home Assistant, **Settings → Devices & services → MQTT** should show your
 
 ## Entities
 
-Entity IDs are `sensor.pila_*` / `switch.pila_*` / `select.pila_*` by default. If you renamed your Pila in the app, the slug changes accordingly.
+Home Assistant generates entity IDs from your Pila's **device name**. If your Pila is called *Kitchen Pila*, entities show up as `sensor.kitchen_pila_battery_soc`, `switch.kitchen_pila_back_lower_outlet`, and so on. The examples below use `your_pila` as a placeholder — replace it with your Pila's slug.
+
+> ⚠️ **The slug is sticky.** Home Assistant bakes your Pila's name into entity IDs the first time it connects. If you rename the Pila later in the app, the friendly name updates in HA but the entity IDs stay the same. To change them, edit each entity in **Settings → Devices & services → MQTT → your Pila**.
 
 ### Power (instantaneous)
 
@@ -132,7 +134,7 @@ The Energy Dashboard uses cumulative counters, not instantaneous power. Don't wi
 
 ## Example Lovelace cards
 
-Drop these into a dashboard via **Edit dashboard → Add card → Manual**. Replace `pila` in entity IDs with your Pila's slug if you renamed it.
+Drop these into a dashboard via **Edit dashboard → Add card → Manual**. Replace `your_pila` in entity IDs with your Pila's slug (e.g. `kitchen_pila`).
 
 ### Battery SOC dial with backup forecast
 
@@ -143,11 +145,11 @@ type: vertical-stack
 cards:
   - type: entities
     entities:
-      - entity: sensor.pila_backup_forecast
+      - entity: sensor.your_pila_backup_forecast
         name: Backup Time Remaining
         icon: mdi:timer-outline
   - type: gauge
-    entity: sensor.pila_battery_soc
+    entity: sensor.your_pila_battery_soc
     name: Battery Level
     needle: true
     severity:
@@ -155,7 +157,7 @@ cards:
       yellow: 15
       red: 0
   - type: sensor
-    entity: sensor.pila_battery_soc
+    entity: sensor.your_pila_battery_soc
     graph: line
     name: 24h History
     detail: 2
@@ -173,23 +175,23 @@ cards:
     title: Pila Power Flow
     columns: 4
     entities:
-      - entity: sensor.pila_total_solar_input
+      - entity: sensor.your_pila_total_solar_input
         name: Solar
-      - entity: sensor.pila_total_ac_input
+      - entity: sensor.your_pila_total_ac_input
         name: Grid
-      - entity: sensor.pila_battery_charge_discharge_rate
+      - entity: sensor.your_pila_battery_charge_discharge_rate
         name: Battery
-      - entity: sensor.pila_total_usage
+      - entity: sensor.your_pila_total_usage
         name: Load
   - type: entities
     entities:
-      - entity: sensor.pila_pila_status
+      - entity: sensor.your_pila_pila_status
         name: Status
-      - entity: sensor.pila_grid_status
+      - entity: sensor.your_pila_grid_status
         name: Grid
-      - entity: sensor.pila_battery_soc
+      - entity: sensor.your_pila_battery_soc
         name: Battery SOC
-      - entity: sensor.pila_backup_forecast
+      - entity: sensor.your_pila_backup_forecast
         name: Backup Forecast
 ```
 
@@ -204,19 +206,19 @@ cards:
     title: USB Power History
     hours_to_show: 1
     entities:
-      - entity: sensor.pila_usb_3_power
+      - entity: sensor.your_pila_usb_3_power
         name: Left
-      - entity: sensor.pila_usb_1_power
+      - entity: sensor.your_pila_usb_1_power
         name: Middle
-      - entity: sensor.pila_usb_2_power
+      - entity: sensor.your_pila_usb_2_power
         name: Right
   - type: entities
     entities:
-      - entity: sensor.pila_usb_3_power
+      - entity: sensor.your_pila_usb_3_power
         name: Left USB Power
-      - entity: sensor.pila_usb_1_power
+      - entity: sensor.your_pila_usb_1_power
         name: Middle USB Power
-      - entity: sensor.pila_usb_2_power
+      - entity: sensor.your_pila_usb_2_power
         name: Right USB Power
 ```
 
@@ -232,7 +234,7 @@ Paste into **Settings → Automations → Add → Edit in YAML**.
 alias: Pila low battery notification
 trigger:
   - platform: numeric_state
-    entity_id: sensor.pila_battery_soc
+    entity_id: sensor.your_pila_battery_soc
     below: 20
     for:
       minutes: 1
@@ -241,8 +243,8 @@ action:
     data:
       title: Pila battery low
       message: >
-        Pila is at {{ states('sensor.pila_battery_soc') }}%.
-        Estimated {{ states('sensor.pila_backup_forecast') }} hours of backup remaining.
+        Pila is at {{ states('sensor.your_pila_battery_soc') }}%.
+        Estimated {{ states('sensor.your_pila_backup_forecast') }} hours of backup remaining.
 mode: single
 ```
 
@@ -254,15 +256,15 @@ mode: single
 alias: Pila grid outage notification
 trigger:
   - platform: state
-    entity_id: sensor.pila_grid_status
+    entity_id: sensor.your_pila_grid_status
     to: off_grid
 action:
   - service: notify.notify
     data:
       title: Pila is off-grid
       message: >
-        Pila switched to off-grid mode. Currently {{ states('sensor.pila_pila_status') | lower }}.
-        Battery at {{ states('sensor.pila_battery_soc') }}%.
+        Pila switched to off-grid mode. Currently {{ states('sensor.your_pila_pila_status') | lower }}.
+        Battery at {{ states('sensor.your_pila_battery_soc') }}%.
 mode: single
 ```
 
@@ -276,16 +278,16 @@ Turn off a non-essential outlet when battery drops below 30 % during a grid outa
 alias: Pila shed non-essential load on low battery
 trigger:
   - platform: numeric_state
-    entity_id: sensor.pila_battery_soc
+    entity_id: sensor.your_pila_battery_soc
     below: 30
 condition:
   - condition: state
-    entity_id: sensor.pila_grid_status
+    entity_id: sensor.your_pila_grid_status
     state: off_grid
 action:
   - service: switch.turn_off
     target:
-      entity_id: switch.pila_ac_2
+      entity_id: switch.your_pila_ac_2
 mode: single
 ```
 

@@ -7,21 +7,21 @@ cards:
     title: Pila Power Flow
     columns: 4
     entities:
-      - entity: sensor.pila_total_solar_input
+      - entity: sensor.your_pila_total_solar_input
         name: Solar
-      - entity: sensor.pila_total_ac_input
+      - entity: sensor.your_pila_total_ac_input
         name: Grid
-      - entity: sensor.pila_battery_charge_discharge_rate
+      - entity: sensor.your_pila_battery_charge_discharge_rate
         name: Battery
-      - entity: sensor.pila_total_usage
+      - entity: sensor.your_pila_total_usage
         name: Load
   - type: entities
     entities:
-      - entity: sensor.pila_pila_status
+      - entity: sensor.your_pila_pila_status
         name: Status
-      - entity: sensor.pila_grid_status
+      - entity: sensor.your_pila_grid_status
         name: Grid
-      - entity: sensor.pila_battery_soc
+      - entity: sensor.your_pila_battery_soc
         name: Battery SOC
-      - entity: sensor.pila_backup_forecast
+      - entity: sensor.your_pila_backup_forecast
         name: Backup Forecast
