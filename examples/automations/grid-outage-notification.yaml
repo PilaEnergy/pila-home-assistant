@@ -1,0 +1,16 @@
+# Notify when Pila goes off-grid (utility power lost or manually islanded).
+
+alias: Pila grid outage notification
+description: Notify when Pila transitions to off-grid mode
+trigger:
+  - platform: state
+    entity_id: sensor.pila_grid_status
+    to: off_grid
+action:
+  - service: notify.notify
+    data:
+      title: Pila is off-grid
+      message: >
+        Pila switched to off-grid mode. Currently {{ states('sensor.pila_pila_status') | lower }}.
+        Battery at {{ states('sensor.pila_battery_soc') }}%.
+mode: single

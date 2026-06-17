@@ -1,0 +1,27 @@
+# At-a-glance overview of where power is coming from and going.
+# Replace `pila` in entity ids with the slugified name of your Pila if you renamed it.
+
+type: vertical-stack
+cards:
+  - type: glance
+    title: Pila Power Flow
+    columns: 4
+    entities:
+      - entity: sensor.pila_total_solar_input
+        name: Solar
+      - entity: sensor.pila_total_ac_input
+        name: Grid
+      - entity: sensor.pila_battery_charge_discharge_rate
+        name: Battery
+      - entity: sensor.pila_total_usage
+        name: Load
+  - type: entities
+    entities:
+      - entity: sensor.pila_pila_status
+        name: Status
+      - entity: sensor.pila_grid_status
+        name: Grid
+      - entity: sensor.pila_battery_soc
+        name: Battery SOC
+      - entity: sensor.pila_backup_forecast
+        name: Backup Forecast

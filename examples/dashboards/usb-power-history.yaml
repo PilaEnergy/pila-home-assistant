@@ -1,0 +1,24 @@
+# Stacked history graph for the three USB-C outlets, plus a live readout.
+# Replace `pila` in entity ids with the slugified name of your Pila if you renamed it.
+# Outlet 1/2/3 map to Middle / Right / Left in the default orientation.
+
+type: vertical-stack
+cards:
+  - type: history-graph
+    title: USB Power History
+    hours_to_show: 1
+    entities:
+      - entity: sensor.pila_usb_3_power
+        name: Left
+      - entity: sensor.pila_usb_1_power
+        name: Middle
+      - entity: sensor.pila_usb_2_power
+        name: Right
+  - type: entities
+    entities:
+      - entity: sensor.pila_usb_3_power
+        name: Left USB Power
+      - entity: sensor.pila_usb_1_power
+        name: Middle USB Power
+      - entity: sensor.pila_usb_2_power
+        name: Right USB Power

@@ -1,0 +1,25 @@
+# Battery SOC dial with backup-time chip and 24-hour history.
+# Drop into a Lovelace dashboard. Replace `pila` in entity ids with the
+# slugified name of your Pila if you renamed it.
+
+type: vertical-stack
+cards:
+  - type: entities
+    entities:
+      - entity: sensor.pila_backup_forecast
+        name: Backup Time Remaining
+        icon: mdi:timer-outline
+  - type: gauge
+    entity: sensor.pila_battery_soc
+    name: Battery Level
+    needle: true
+    severity:
+      green: 50
+      yellow: 15
+      red: 0
+  - type: sensor
+    entity: sensor.pila_battery_soc
+    graph: line
+    name: 24h History
+    detail: 2
+    hours_to_show: 24
