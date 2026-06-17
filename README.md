@@ -1,32 +1,22 @@
 # Pila + Home Assistant
 
-Monitor and control your Pila battery from [Home Assistant](https://www.home-assistant.io/) over MQTT.
+Monitor and control your [Pila](https://pilaenergy.com) battery from [Home Assistant](https://www.home-assistant.io/) over MQTT.
 
-> ⚠️ **Unofficial integration.** Pila does not currently have a "Works with Home Assistant" certification. This integration works by publishing MQTT discovery messages to a broker that you run on your Home Assistant instance. Bring your own broker — we recommend the [Mosquitto add-on](https://www.home-assistant.io/integrations/mqtt/#setting-up-a-broker).
+> ⚠️ **Unofficial integration.** Pila does not currently have "Works with Home Assistant" certification. This integration uses MQTT discovery against a broker that you run on your Home Assistant instance — bring your own broker. The [Mosquitto add-on](https://www.home-assistant.io/integrations/mqtt/#setting-up-a-broker) is recommended.
 
-> ℹ️ **One Pila per Home Assistant instance.** Each Home Assistant instance can connect to a single Pila device. Mesh-level views (multiple Pilas as one site) are not exposed through this integration today.
-
-## What you get
-
-Once connected, your Pila shows up as a single device in Home Assistant with sensors for power flow, battery state, lifetime energy counters, and switches for each outlet. You can drop these into the Energy Dashboard, build custom Lovelace cards, and trigger automations.
-
-![Pila device in Home Assistant](./images/device-overview.png) <!-- TODO: add screenshot -->
+> ℹ️ **One Pila per Home Assistant instance.** Each Home Assistant instance can connect to a single Pila device. Mesh-level views (multiple Pilas as a single site) are not exposed through this integration today.
 
 ## Contents
 
-- [Setup](./docs/setup.md) — connect Pila to your Home Assistant broker
-- [Entity reference](./docs/entities.md) — every sensor, switch, and select Pila publishes
-- [Energy Dashboard](./docs/energy-dashboard.md) — wiring Pila into the HA Energy Dashboard
-- [Example dashboards](./examples/dashboards/) — Lovelace YAML you can paste in
-- [Example automations](./examples/automations/) — common Pila automations
-- [Troubleshooting](./docs/troubleshooting.md)
+- [Compatibility](#compatibility)
+- [Setup](#setup)
+- [Entities](#entities)
+- [Home Assistant Energy Dashboard](#home-assistant-energy-dashboard)
+- [Example Lovelace cards](#example-lovelace-cards)
+- [Example automations](#example-automations)
+- [Troubleshooting](#troubleshooting)
+- [Advanced: MQTT topics](#advanced-mqtt-topics)
 - [Changelog](./CHANGELOG.md)
-
-## Quick links
-
-- Buy a Pila: [pilaenergy.com](https://pilaenergy.com)
-- Report a bug: [Issues](https://github.com/PilaEnergy/pila-home-assistant/issues)
-- Home Assistant Energy Dashboard docs: [home-assistant.io/docs/energy](https://www.home-assistant.io/docs/energy/)
 
 ## Compatibility
 
@@ -36,8 +26,308 @@ Once connected, your Pila shows up as a single device in Home Assistant with sen
 | Home Assistant | 2024.x or newer (MQTT discovery v2 schema) |
 | MQTT broker | Any MQTT 3.1.1 broker. Mosquitto add-on recommended. |
 | Network | Pila and Home Assistant must be on the same LAN |
-| TLS | Plaintext only on port 1883 today. TLS support is planned. |
+| TLS | Plaintext on port 1883 only today. TLS support is planned. |
+
+## Setup
+
+Total time: about 5 minutes.
+
+### 1. Install an MQTT broker in Home Assistant
+
+If you already have one, skip to step 2.
+
+1. **Settings → Add-ons → Add-on Store**
+2. Install **Mosquitto broker**
+3. Start the add-on; enable "Start on boot" and "Watchdog"
+4. **Settings → Devices & services → Add Integration → MQTT**. Home Assistant auto-detects the broker.
+
+![MQTT integration with Mosquitto](./images/mqtt-integration.png) <!-- TODO -->
+
+### 2. Find your Home Assistant IP
+
+**Settings → System → Network** — note the IP of the interface Pila will reach (usually `eth0` / `end0` or `wlan0`).
+
+![HA network settings](./images/ha-network.png) <!-- TODO -->
+
+### 3. Create a dedicated Home Assistant user (recommended)
+
+**Settings → People → Users → Add User**. Username e.g. `pila`, set a password. Leave admin disabled.
+
+### 4. Connect on the Pila screen
+
+On your Pila:
+
+1. Open **Settings → Home Assistant**
+2. Enter the HA IP, username, and password
+3. Tap **Save & Connect**
+
+![Pila Home Assistant screen](./images/pila-ha-screen.png) <!-- TODO -->
+
+The status indicator turns green when connected. The connection persists across reboots.
+
+### 5. Verify
+
+In Home Assistant, **Settings → Devices & services → MQTT** should show your Pila with all entities listed below.
+
+## Entities
+
+Entity IDs are `sensor.pila_*` / `switch.pila_*` / `select.pila_*` by default. If you renamed your Pila in the app, the slug changes accordingly.
+
+### Power (instantaneous, watts)
+
+| Name | Description |
+|---|---|
+| Total Usage | Total load currently being powered by the Pila (battery + grid + solar combined). |
+| Battery Charge / Discharge Rate | Signed power into/out of the battery pack. Positive = charging, negative = discharging. |
+| Total Solar Input | Power currently arriving from solar. |
+| Total AC Input | Power currently flowing in from the grid. |
+
+### Battery
+
+| Name | Description |
+|---|---|
+| Battery SOC | State of charge, 0–100 %. |
+| Battery energy remaining | Energy left in the pack at the current state of charge, in Wh. |
+| Backup Forecast | Estimated hours of backup runtime at current load. |
+| Pila Status | Human-readable summary. One of: `Solar powering devices`, `Battery powering devices`, `Charging from solar`, `Charging from utility`, `Utility powering devices`, `Idle`. |
+
+### Grid
+
+| Name | Description |
+|---|---|
+| Grid Status | One of: `on_grid` (connected to and using utility), `off_grid` (islanded — running on battery/solar), `idle_off_grid` (no grid and no AC output), `unknown`. |
+
+### Lifetime energy totals
+
+Cumulative `total_increasing` counters in Wh, designed for the Energy Dashboard.
+
+| Name | Description |
+|---|---|
+| Pila Lifetime Import | Total energy imported from the grid through Pila over the device's lifetime. |
+| Battery Lifetime Charge | Total energy charged into the battery pack over its lifetime. |
+| Battery Lifetime Discharge | Total energy discharged from the battery pack over its lifetime. |
+
+> **Coming soon:** **Pila Lifetime Export** (ships with backfeeding) and **Lifetime Solar Production** (ships with solar production reporting).
+
+### Per-outlet (one set per outlet)
+
+For each AC and USB-C outlet:
+
+| Entity | Type | Description |
+|---|---|---|
+| `{outlet name}` | switch | Turn the outlet on or off. State reflects relay state. |
+| `{outlet name} power` | sensor (W) | Power currently flowing through the outlet. |
+| `{outlet name} Lifetime Energy` | sensor (Wh) | Cumulative energy delivered through the outlet. |
+
+**Outlet naming.** If you've assigned an appliance name to an outlet in the Pila app (e.g. "Fridge"), Home Assistant uses that name. Otherwise it falls back to the orientation default ("USB Left", "USB Middle", "USB Right", "AC 1", etc.). Renaming an outlet in the Pila app updates the friendly name in HA but **does not change the entity_id** — edit the entity directly in HA if you want the slug to change.
+
+### Controls
+
+| Name | Type | Values | Description |
+|---|---|---|---|
+| Grid mode | select | `on_grid`, `off_grid` | Switch Pila between on-grid and manual off-grid (island) mode. |
+
+## Home Assistant Energy Dashboard
+
+Wire Pila into [Settings → Dashboards → Energy](https://www.home-assistant.io/docs/energy/):
+
+| Energy Dashboard tile | Pila entity |
+|---|---|
+| Grid consumption | Pila Lifetime Import |
+| Battery in (charge) | Battery Lifetime Charge |
+| Battery out (discharge) | Battery Lifetime Discharge |
+| Return to grid (export) | *coming soon — backfeeding* |
+| Solar production | *coming soon — solar reporting* |
+
+The Energy Dashboard uses cumulative counters, not instantaneous power. Don't wire `Battery Charge / Discharge Rate` here.
+
+## Example Lovelace cards
+
+Drop these into a dashboard via **Edit dashboard → Add card → Manual**. Replace `pila` in entity IDs with your Pila's slug if you renamed it.
+
+### Battery SOC dial with backup forecast
+
+![Battery SOC card](./images/battery-soc-card.png) <!-- TODO -->
+
+```yaml
+type: vertical-stack
+cards:
+  - type: entities
+    entities:
+      - entity: sensor.pila_backup_forecast
+        name: Backup Time Remaining
+        icon: mdi:timer-outline
+  - type: gauge
+    entity: sensor.pila_battery_soc
+    name: Battery Level
+    needle: true
+    severity:
+      green: 50
+      yellow: 15
+      red: 0
+  - type: sensor
+    entity: sensor.pila_battery_soc
+    graph: line
+    name: 24h History
+    detail: 2
+    hours_to_show: 24
+```
+
+[`examples/dashboards/battery-soc-card.yaml`](./examples/dashboards/battery-soc-card.yaml)
+
+### Power flow overview
+
+```yaml
+type: vertical-stack
+cards:
+  - type: glance
+    title: Pila Power Flow
+    columns: 4
+    entities:
+      - entity: sensor.pila_total_solar_input
+        name: Solar
+      - entity: sensor.pila_total_ac_input
+        name: Grid
+      - entity: sensor.pila_battery_charge_discharge_rate
+        name: Battery
+      - entity: sensor.pila_total_usage
+        name: Load
+  - type: entities
+    entities:
+      - entity: sensor.pila_pila_status
+        name: Status
+      - entity: sensor.pila_grid_status
+        name: Grid
+      - entity: sensor.pila_battery_soc
+        name: Battery SOC
+      - entity: sensor.pila_backup_forecast
+        name: Backup Forecast
+```
+
+[`examples/dashboards/power-flow-overview.yaml`](./examples/dashboards/power-flow-overview.yaml)
+
+### USB-C stacked history
+
+```yaml
+type: vertical-stack
+cards:
+  - type: history-graph
+    title: USB Power History
+    hours_to_show: 1
+    entities:
+      - entity: sensor.pila_usb_3_power
+        name: Left
+      - entity: sensor.pila_usb_1_power
+        name: Middle
+      - entity: sensor.pila_usb_2_power
+        name: Right
+  - type: entities
+    entities:
+      - entity: sensor.pila_usb_3_power
+        name: Left USB Power
+      - entity: sensor.pila_usb_1_power
+        name: Middle USB Power
+      - entity: sensor.pila_usb_2_power
+        name: Right USB Power
+```
+
+[`examples/dashboards/usb-power-history.yaml`](./examples/dashboards/usb-power-history.yaml)
+
+## Example automations
+
+Paste into **Settings → Automations → Add → Edit in YAML**.
+
+### Low-SOC notification
+
+```yaml
+alias: Pila low battery notification
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.pila_battery_soc
+    below: 20
+    for:
+      minutes: 1
+action:
+  - service: notify.notify
+    data:
+      title: Pila battery low
+      message: >
+        Pila is at {{ states('sensor.pila_battery_soc') }}%.
+        Estimated {{ states('sensor.pila_backup_forecast') }} hours of backup remaining.
+mode: single
+```
+
+[`examples/automations/low-soc-notification.yaml`](./examples/automations/low-soc-notification.yaml)
+
+### Grid outage notification
+
+```yaml
+alias: Pila grid outage notification
+trigger:
+  - platform: state
+    entity_id: sensor.pila_grid_status
+    to: off_grid
+action:
+  - service: notify.notify
+    data:
+      title: Pila is off-grid
+      message: >
+        Pila switched to off-grid mode. Currently {{ states('sensor.pila_pila_status') | lower }}.
+        Battery at {{ states('sensor.pila_battery_soc') }}%.
+mode: single
+```
+
+[`examples/automations/grid-outage-notification.yaml`](./examples/automations/grid-outage-notification.yaml)
+
+### Shed non-essential load on low battery
+
+Turn off a non-essential outlet when battery drops below 30 % during a grid outage.
+
+```yaml
+alias: Pila shed non-essential load on low battery
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.pila_battery_soc
+    below: 30
+condition:
+  - condition: state
+    entity_id: sensor.pila_grid_status
+    state: off_grid
+action:
+  - service: switch.turn_off
+    target:
+      entity_id: switch.pila_ac_2
+mode: single
+```
+
+[`examples/automations/turn-off-outlet-on-low-soc.yaml`](./examples/automations/turn-off-outlet-on-low-soc.yaml)
+
+## Troubleshooting
+
+**Status stuck on "Disconnected" on the Pila screen.** Check that (a) the HA IP is correct and stable (set a DHCP reservation if needed), (b) the username/password work in a browser, (c) the Mosquitto add-on is running, and (d) port 1883 is reachable from the LAN (`nc -vz <HA_IP> 1883`). Reboot Pila and watch the indicator.
+
+**Pila is connected but no entities appear.** In Home Assistant: **Settings → Devices & services → MQTT → Configure → Listen to a topic**, subscribe to `homeassistant/device/pila/#`. You should see a config payload shortly after Pila connects. If you see the payload but no device, restart HA once — discovery occasionally fails to register on first push.
+
+**Entities show "Unknown" or "Unavailable" forever.** Subscribe to `pila/state/#` to confirm state messages are flowing. If they are, the value template may not be finding the key — [open an issue](https://github.com/PilaEnergy/pila-home-assistant/issues) with the raw payload.
+
+**Outlet switch doesn't change state when I toggle it.** Relay commands are fire-and-forget; state reflects what Pila reports back. Give it 2–3 seconds. If it never changes, check whether a Pila-side schedule or timer is fighting your command.
+
+**Disconnecting from Home Assistant.** Tap **Disconnect** on the Pila Home Assistant screen. The MQTT device goes offline in HA; the entities remain in HA's registry until you delete the device manually under **Settings → Devices & services → MQTT**.
+
+For anything else, [open an issue](https://github.com/PilaEnergy/pila-home-assistant/issues) with your Pila firmware version, Home Assistant version, broker, and what you've tried.
+
+## Advanced: MQTT topics
+
+For users who want to bypass HA discovery and consume topics directly.
+
+| Purpose | Topic |
+|---|---|
+| Discovery config (published by Pila) | `homeassistant/device/pila/{device_id}/config` |
+| State (published by Pila) | `pila/state/{device_id}` |
+| Commands (subscribed by Pila) | `pila/command/{device_id}` |
+
+State messages are published at QoS 2. Retained messages are used for connection-status only. The discovery config is re-published on every reconnect, so deleting the device in HA and reconnecting Pila will recreate it.
 
 ## License
 
-TODO
+See [LICENSE](./LICENSE).
