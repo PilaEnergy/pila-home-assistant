@@ -18,7 +18,7 @@ Monitor and control your [Pila](https://pilaenergy.com) battery from [Home Assis
 
 | Requirement | Notes |
 |---|---|
-| Pila firmware | TODO — minimum supported version |
+| Pila firmware | 1.1 or newer |
 | Home Assistant | 2024.x or newer (MQTT discovery v2 schema) |
 | MQTT broker | Any MQTT 3.1.1 broker. Mosquitto add-on recommended. |
 | Network | Pila and Home Assistant must be on the same LAN |
