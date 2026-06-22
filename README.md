@@ -37,7 +37,7 @@ If you already have one, skip to step 2. For deeper detail, see [Home Assistant'
 3. Start the add-on; enable "Start on boot" and "Watchdog"
 4. **Settings → Devices & services → Add Integration → MQTT**. Home Assistant auto-detects the broker.
 
-![MQTT integration with Mosquitto](./images/mqtt-integration.png) <!-- TODO -->
+<img src="./images/mqtt-integration.png" alt="MQTT integration with Mosquitto" width="500">
 
 ### 2. Connect on the Pila screen
 
@@ -45,10 +45,13 @@ On your Pila:
 
 1. Open **Settings → Home Assistant**
 2. The **IP Address** field is pre-populated — Pila does an mDNS sweep for `homeassistant.local` on boot and fills in what it finds. If the address looks right, use it. Otherwise, find it manually in HA under **Settings → System → Network** and overwrite.
+
+   <img src="./images/ha-network.png" alt="Finding HA IP under Settings → System → Network" width="500">
+
 3. Enter your Home Assistant username and password
 4. Tap **Save & Connect**
 
-![Pila Home Assistant screen](./images/pila-ha-screen.png) <!-- TODO -->
+<img src="./images/pila-ha-screen.png" alt="Pila Home Assistant screen" width="500">
 
 The status indicator turns green when connected. The connection persists across reboots.
 
@@ -134,7 +137,7 @@ Drop these into a dashboard via **Edit dashboard → Add card → Manual**. Repl
 
 ### Battery SOC dial with backup forecast
 
-![Battery SOC card](./images/battery-soc-card.png) <!-- TODO -->
+<img src="./images/battery-soc-card.png" alt="Battery SOC card" width="400">
 
 ```yaml
 type: vertical-stack
