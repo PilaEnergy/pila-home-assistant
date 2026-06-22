@@ -111,7 +111,9 @@ For each AC and USB-C outlet:
 | `{outlet name} power` | sensor | W | Power currently flowing through the outlet. |
 | `{outlet name} Lifetime Energy` | sensor | Wh | Cumulative energy delivered through the outlet. |
 
-**Outlet naming.** If you've assigned an appliance name to an outlet in the Pila app (e.g. "Fridge"), Home Assistant uses that name. Otherwise it falls back to the orientation default ("USB Left", "USB Middle", "USB Right", "AC 1", etc.). Renaming an outlet in the Pila app updates the friendly name in HA but **does not change the entity_id** — edit the entity directly in HA if you want the slug to change.
+**Outlet naming.** If you've assigned an appliance name to an outlet in the Pila app (e.g. "Fridge"), Home Assistant uses that name. Otherwise it falls back to the orientation default ("Left USB Port", "Middle USB Port", "Right USB Port", "Front Left Outlet", "Front Right Outlet", "Back Upper Outlet", "Back Lower Outlet", etc.). The slug is derived from this name, so a default `usb_1` becomes `sensor.your_pila_right_usb_port_power`, not `sensor.your_pila_usb_1_power`. Confirm the exact entity_id in **Settings → Devices & services → MQTT → your Pila** before referencing it in YAML.
+
+Renaming an outlet in the Pila app updates the friendly name in HA but **does not change the entity_id**. Use the device's **⋮ → Recreate entity IDs** menu in HA (2025.6+) to regenerate them.
 
 ### Controls
 
@@ -205,19 +207,19 @@ cards:
     title: USB Power History
     hours_to_show: 1
     entities:
-      - entity: sensor.your_pila_usb_3_power
+      - entity: sensor.your_pila_left_usb_port_power
         name: Left
-      - entity: sensor.your_pila_usb_1_power
+      - entity: sensor.your_pila_middle_usb_port_power
         name: Middle
-      - entity: sensor.your_pila_usb_2_power
+      - entity: sensor.your_pila_right_usb_port_power
         name: Right
   - type: entities
     entities:
-      - entity: sensor.your_pila_usb_3_power
+      - entity: sensor.your_pila_left_usb_port_power
         name: Left USB Power
-      - entity: sensor.your_pila_usb_1_power
+      - entity: sensor.your_pila_middle_usb_port_power
         name: Middle USB Power
-      - entity: sensor.your_pila_usb_2_power
+      - entity: sensor.your_pila_right_usb_port_power
         name: Right USB Power
 ```
 
@@ -286,7 +288,7 @@ condition:
 action:
   - service: switch.turn_off
     target:
-      entity_id: switch.your_pila_ac_2
+      entity_id: switch.your_pila_front_right_outlet
 mode: single
 ```
 

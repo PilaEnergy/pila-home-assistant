@@ -1,5 +1,8 @@
 # Turn off a non-essential outlet when battery drops below 30% during a grid outage.
-# Replace `switch.your_pila_ac_2` with whichever outlet is your "non-essential" one.
+# Replace `switch.your_pila_front_right_outlet` with whichever outlet is your
+# "non-essential" one. Outlet entity IDs use the friendly name (e.g.
+# "Front Right Outlet" → switch.your_pila_front_right_outlet). Confirm in
+# Settings → Devices & services → MQTT → your Pila.
 
 alias: Pila shed non-essential load on low battery
 description: Turn off non-essential AC outlet when off-grid and SOC < 30%
@@ -14,5 +17,5 @@ condition:
 action:
   - service: switch.turn_off
     target:
-      entity_id: switch.your_pila_ac_2
+      entity_id: switch.your_pila_front_right_outlet
 mode: single
