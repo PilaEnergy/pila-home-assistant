@@ -65,7 +65,7 @@ In Home Assistant, **Settings → Devices & services → MQTT** should show your
 
 Home Assistant generates entity IDs from your Pila's **device name**. If your Pila is called *Kitchen Pila*, entities show up as `sensor.kitchen_pila_battery_soc`, `switch.kitchen_pila_back_lower_outlet`, and so on. The examples below use `your_pila` as a placeholder — replace it with your Pila's slug.
 
-> ⚠️ **The slug is sticky.** Home Assistant bakes your Pila's name into entity IDs the first time it connects. If you rename the Pila later in the app, the friendly name updates in HA but the entity IDs stay the same. To change them, edit each entity in **Settings → Devices & services → MQTT → your Pila**.
+> ⚠️ **The slug is sticky.** Home Assistant bakes your Pila's name into entity IDs the first time it connects. If you rename the Pila later in the app, the friendly name updates in HA but the entity IDs stay the same. The fastest fix: in HA, go to **Settings → Devices & services → MQTT → your Pila**, open the **⋮ menu**, and choose **Recreate entity IDs**. HA will regenerate every entity_id from the current device name in one click (requires HA 2025.6 or newer).
 
 ### Power (instantaneous)
 
