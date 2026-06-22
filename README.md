@@ -21,7 +21,7 @@ Monitor and control your [Pila](https://pilaenergy.com) battery from [Home Assis
 | Pila firmware | 1.1 or newer |
 | Home Assistant | 2024.x or newer (MQTT discovery v2 schema) |
 | MQTT broker | Any MQTT 3.1.1 broker. Mosquitto add-on recommended. |
-| Network | Pila and Home Assistant must be on the same LAN |
+| Network | Pila and Home Assistant must be on the same local network |
 | TLS | Plaintext on port 1883 only today. TLS support is planned. |
 
 ## Setup
@@ -30,7 +30,7 @@ Total time: about 5 minutes.
 
 ### 1. Install an MQTT broker in Home Assistant
 
-If you already have one, skip to step 2.
+If you already have one, skip to step 2. For deeper detail, see [Home Assistant's MQTT integration docs](https://www.home-assistant.io/integrations/mqtt).
 
 1. **Settings → Add-ons → Add-on Store**
 2. Install **Mosquitto broker**
@@ -291,7 +291,7 @@ mode: single
 
 ## Troubleshooting
 
-**Status stuck on "Disconnected" on the Pila screen.** Check that (a) the HA IP is correct and stable (set a DHCP reservation if needed), (b) the username/password work in a browser, (c) the Mosquitto add-on is running, and (d) port 1883 is reachable from the LAN (`nc -vz <HA_IP> 1883`). Reboot Pila and watch the indicator.
+**Status stuck on "Disconnected" on the Pila screen.** Check that (a) the HA IP is correct and stable (set a DHCP reservation if needed), (b) the username/password work in a browser, (c) the Mosquitto add-on is running, and (d) port 1883 is reachable from the local network (`nc -vz <HA_IP> 1883`). Reboot Pila and watch the indicator.
 
 **Pila is connected but no entities appear.** In Home Assistant: **Settings → Devices & services → MQTT → Configure → Listen to a topic**, subscribe to `homeassistant/device/pila/#`. You should see a config payload shortly after Pila connects. If you see the payload but no device, restart HA once — discovery occasionally fails to register on first push.
 
