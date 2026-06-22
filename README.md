@@ -169,6 +169,8 @@ cards:
 
 ### Power flow overview
 
+<img src="./images/power-flow-overview.png" alt="Power flow overview card" width="400">
+
 ```yaml
 type: vertical-stack
 cards:
@@ -199,6 +201,8 @@ cards:
 [`examples/dashboards/power-flow-overview.yaml`](./examples/dashboards/power-flow-overview.yaml)
 
 ### USB-C stacked history
+
+<img src="./images/usb-chart-card.png" alt="USB-C stacked history card" width="400">
 
 ```yaml
 type: vertical-stack
