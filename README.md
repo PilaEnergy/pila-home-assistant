@@ -336,7 +336,7 @@ For users who want to bypass HA discovery and consume topics directly.
 | State (published by Pila) | `pila/state/{device_id}` | no |
 | Availability (published by Pila, also the LWT) | `pila/availability/{device_id}` (`online` / `offline`) | yes |
 | HA Core birth/will (subscribed by Pila) | `homeassistant/status` | — |
-| Commands (subscribed by Pila) | `pila/command/{device_id}` | — |
+| Commands (subscribed by Pila) | `pila/switch/outlet/{device_id}` | — |
 
 State messages are published at QoS 2. The discovery config is re-published every time Pila connects to the broker AND every time Home Assistant Core publishes `online` on `homeassistant/status`, so HA Core restarts auto-recover without any user action.
 
