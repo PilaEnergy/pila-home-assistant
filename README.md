@@ -7,6 +7,7 @@ Monitor and control your [Pila](https://pilaenergy.com) battery from [Home Assis
 - [Compatibility](#compatibility)
 - [Setup](#setup)
 - [Entities](#entities)
+- [Reliability](#reliability)
 - [Home Assistant Energy Dashboard](#home-assistant-energy-dashboard)
 - [Example Lovelace cards](#example-lovelace-cards)
 - [Example automations](#example-automations)
@@ -18,11 +19,13 @@ Monitor and control your [Pila](https://pilaenergy.com) battery from [Home Assis
 
 | Requirement | Notes |
 |---|---|
-| Pila firmware | 1.1 or newer |
+| Pila firmware | 1.2 or newer [^firmware] |
 | Home Assistant | 2024.x or newer (MQTT discovery v2 schema) |
 | MQTT broker | Any MQTT 3.1.1 broker. Mosquitto add-on recommended. |
 | Network | Pila and Home Assistant must be on the same local network |
 | TLS | Plaintext on port 1883 only today. TLS support is planned. |
+
+[^firmware]: 1.1 supports the integration but requires a manual reconnect from the Pila screen if Home Assistant restarts or the broker drops. Auto-reconnect and the `availability_topic` shipped in 1.2.
 
 ## Setup
 
@@ -120,6 +123,17 @@ Renaming an outlet in the Pila app updates the friendly name in HA but **does no
 | Name | Type | Values | Description |
 |---|---|---|---|
 | Grid mode | select | `on_grid`, `off_grid` | Switch Pila between on-grid and manual off-grid (island) mode. |
+
+## Reliability
+
+The integration recovers automatically from common failures. No manual reconnect needed.
+
+- **Home Assistant Core restart** (from inside the HA UI) — Pila listens for the `homeassistant/status` birth message and republishes its discovery config + state when HA comes back.
+- **Mosquitto restart** (e.g. broker add-on update) — Pila's MQTT client auto-reconnects with exponential backoff (1s → 120s).
+- **Home Assistant OS reboot** — both of the above apply; Pila republishes once the broker is reachable again.
+- **Pila power loss or network drop** — Pila reconnects on its own when it returns.
+
+All Pila entities flip to **Unavailable** in HA within roughly 90 seconds of any failure (via the `availability_topic` and MQTT keepalive) and recover automatically when both sides are back online.
 
 ## Home Assistant Energy Dashboard
 
@@ -304,7 +318,9 @@ mode: single
 
 **Pila is connected but no entities appear.** In Home Assistant: **Settings → Devices & services → MQTT → Configure → Listen to a topic**, subscribe to `homeassistant/device/pila/#`. You should see a config payload shortly after Pila connects. If you see the payload but no device, restart HA once — discovery occasionally fails to register on first push.
 
-**Entities show "Unknown" or "Unavailable" forever.** Subscribe to `pila/state/#` to confirm state messages are flowing. If they are, the value template may not be finding the key — [open an issue](https://github.com/PilaEnergy/pila-home-assistant/issues) with the raw payload.
+**Entities show "Unavailable" forever.** On Pila 1.2+, this means Pila has genuinely lost its broker connection or the credentials are bad — recovery is automatic when both sides return, so persistent Unavailable is real. Subscribe to `pila/availability/#` on the HA broker: if the retained payload is `offline`, Pila isn't talking to the broker (check the Pila screen for status, verify credentials, check the broker is running). If it's `online` but entities are still Unavailable, [open an issue](https://github.com/PilaEnergy/pila-home-assistant/issues) with the raw `pila/state/#` payload.
+
+**Entities show "Unknown" forever.** Subscribe to `pila/state/#` to confirm state messages are flowing. If they are, the value template may not be finding the key — [open an issue](https://github.com/PilaEnergy/pila-home-assistant/issues) with the raw payload.
 
 **Outlet switch doesn't change state when I toggle it.** Relay commands are fire-and-forget; state reflects what Pila reports back. Give it 2–3 seconds. If it never changes, check whether a Pila-side schedule or timer is fighting your command.
 
@@ -316,13 +332,15 @@ For anything else, [open an issue](https://github.com/PilaEnergy/pila-home-assis
 
 For users who want to bypass HA discovery and consume topics directly.
 
-| Purpose | Topic |
-|---|---|
-| Discovery config (published by Pila) | `homeassistant/device/pila/{device_id}/config` |
-| State (published by Pila) | `pila/state/{device_id}` |
-| Commands (subscribed by Pila) | `pila/command/{device_id}` |
+| Purpose | Topic | Retained |
+|---|---|---|
+| Discovery config (published by Pila) | `homeassistant/device/pila/{device_id}/config` | no |
+| State (published by Pila) | `pila/state/{device_id}` | no |
+| Availability (published by Pila, also the LWT) | `pila/availability/{device_id}` (`online` / `offline`) | yes |
+| HA Core birth/will (subscribed by Pila) | `homeassistant/status` | — |
+| Commands (subscribed by Pila) | `pila/command/{device_id}` | — |
 
-State messages are published at QoS 2. Retained messages are used for connection-status only. The discovery config is re-published on every reconnect, so deleting the device in HA and reconnecting Pila will recreate it.
+State messages are published at QoS 2. The discovery config is re-published every time Pila connects to the broker AND every time Home Assistant Core publishes `online` on `homeassistant/status`, so HA Core restarts auto-recover without any user action.
 
 ## License
 
