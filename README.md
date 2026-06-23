@@ -19,13 +19,11 @@ Monitor and control your [Pila](https://pilaenergy.com) battery from [Home Assis
 
 | Requirement | Notes |
 |---|---|
-| Pila firmware | 1.2 or newer [^firmware] |
+| Pila firmware | 1.2 or newer |
 | Home Assistant | 2024.x or newer (MQTT discovery v2 schema) |
 | MQTT broker | Any MQTT 3.1.1 broker. Mosquitto add-on recommended. |
 | Network | Pila and Home Assistant must be on the same local network |
 | TLS | Plaintext on port 1883 only today. TLS support is planned. |
-
-[^firmware]: 1.1 supports the integration but requires a manual reconnect from the Pila screen if Home Assistant restarts or the broker drops. Auto-reconnect and the `availability_topic` shipped in 1.2.
 
 ## Setup
 
