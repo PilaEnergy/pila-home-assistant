@@ -33,7 +33,7 @@ Total time: about 5 minutes.
 
 If you already have one, skip to step 2. For deeper detail, see [Home Assistant's MQTT integration docs](https://www.home-assistant.io/integrations/mqtt).
 
-1. **Settings → Add-ons → Add-on Store**
+1. **Settings → Add-ons → Add-on Store** (sometimes called **Apps**)
 2. Install **Mosquitto broker**
 3. Start the add-on; enable "Start on boot" and "Watchdog"
 4. **Settings → Devices & services → Add Integration → MQTT**. Home Assistant auto-detects the broker.
