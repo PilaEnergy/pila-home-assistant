@@ -1,0 +1,74 @@
+blueprint:
+  name: Send solar readings to Pila
+  description: >
+    Sends your current solar production, and optionally your grid power, to every
+    Pila connected to this Home Assistant, every 10 seconds. Pila uses it to charge
+    from your excess solar. Without a grid sensor, Pila assumes your home uses 400 W.
+
+
+    Full guide: https://github.com/PilaEnergy/pila-home-assistant#solar-readings-from-home-assistant
+  domain: automation
+  source_url: https://github.com/PilaEnergy/pila-home-assistant/blob/main/blueprints/automation/pila/send_solar_to_pila.yaml
+  input:
+    solar_power:
+      name: Solar power sensor
+      description: Your current solar production, in W or kW.
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+              device_class: power
+    grid_power:
+      name: Grid power sensor (optional)
+      description: >
+        Power flowing between your home and the grid, in W or kW. Leave empty if you
+        don't have one.
+      default: ""
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+              device_class: power
+    grid_export_positive:
+      name: Grid sensor reports export as positive
+      description: >
+        Turn on if your grid sensor shows a positive value while you're sending power
+        to the grid. Pila expects positive while importing.
+      default: false
+      selector:
+        boolean:
+
+mode: single
+max_exceeded: silent
+
+trigger:
+  - platform: time_pattern
+    seconds: "/10"
+
+variables:
+  solar_entity: !input solar_power
+  grid_entity: !input grid_power
+  grid_export_positive: !input grid_export_positive
+
+condition:
+  - condition: template
+    value_template: "{{ states(solar_entity) | is_number }}"
+
+action:
+  - service: mqtt.publish
+    data:
+      topic: pila/solar
+      payload: >
+        {% set units_in_W = {'W': 1, 'kW': 1000, 'MW': 1000000} %}
+        {% set solar_W = states(solar_entity) | float
+          * units_in_W.get(state_attr(solar_entity, 'unit_of_measurement'), 1) %}
+        {% set reading = {'site_solar_p_W': solar_W | round(0) | int} %}
+        {% if grid_entity and states(grid_entity) | is_number %}
+          {% set grid_W = states(grid_entity) | float
+            * units_in_W.get(state_attr(grid_entity, 'unit_of_measurement'), 1) %}
+          {% if grid_export_positive %}
+            {% set grid_W = -grid_W %}
+          {% endif %}
+          {% set reading = dict(reading, site_grid_p_W=grid_W | round(0) | int) %}
+        {% endif %}
+        {{ reading | to_json }}

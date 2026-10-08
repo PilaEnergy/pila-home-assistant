@@ -9,6 +9,7 @@ Monitor and control your [Pila](https://pilaenergy.com) battery from [Home Assis
 - [Entities](#entities)
 - [Reliability](#reliability)
 - [Home Assistant Energy Dashboard](#home-assistant-energy-dashboard)
+- [Solar readings from Home Assistant](#solar-readings-from-home-assistant)
 - [Example Lovelace cards](#example-lovelace-cards)
 - [Example automations](#example-automations)
 - [Troubleshooting](#troubleshooting)
@@ -144,6 +145,64 @@ Wire Pila into [Settings → Dashboards → Energy](https://www.home-assistant.i
 | Battery out (discharge) | Battery Lifetime Discharge |
 
 The Energy Dashboard uses cumulative counters, not instantaneous power. Don't wire `Battery Charge / Discharge Rate` here.
+
+## Solar readings from Home Assistant
+
+If Home Assistant already knows how much your solar panels produce, Pila can use it to charge from your excess solar. Home Assistant sends the readings to Pila every 10 seconds with a blueprint. Every Pila connected to this Home Assistant receives them.
+
+### 1. Import the blueprint
+
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FPilaEnergy%2Fpila-home-assistant%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fpila%2Fsend_solar_to_pila.yaml)
+
+Or go to **Settings → Automations & scenes → Blueprints → Import Blueprint** and paste:
+
+```
+https://github.com/PilaEnergy/pila-home-assistant/blob/main/blueprints/automation/pila/send_solar_to_pila.yaml
+```
+
+### 2. Create the automation
+
+Open **Settings → Automations & scenes → Blueprints → Send solar readings to Pila → Create Automation** and pick:
+
+| Input | What to pick |
+|---|---|
+| Solar power sensor | Your current solar production, in W or kW. |
+| Grid power sensor (optional) | Power flowing between your home and the grid, in W or kW. Leave empty if you don't have one. |
+| Grid sensor reports export as positive | Turn on if your grid sensor shows a positive value while you're sending power to the grid. |
+
+Without a grid sensor, Pila assumes your home uses 400 W and treats solar above that as excess it can charge from.
+
+### 3. Turn it on on your Pila
+
+Your Pila needs to be connected to Home Assistant first (see [Setup](#setup)). Then, on your Pila, open **Settings → Solar → Home Assistant** and tap **Use Home Assistant**. Once readings arrive, the screen shows your current solar production.
+
+If Home Assistant stops sending readings for 30 minutes, Pila falls back to its own solar estimate until they come back.
+
+### Writing your own automation
+
+You can also publish the readings yourself. Pila listens on `pila/solar` for JSON:
+
+| Key | Unit | Notes |
+|---|---|---|
+| `site_solar_p_W` | W | Required. Current solar production. |
+| `site_grid_p_W` | W | Optional. Positive while importing from the grid, negative while exporting. |
+
+```yaml
+alias: Send solar readings to Pila
+trigger:
+  - platform: time_pattern
+    seconds: "/10"
+action:
+  - service: mqtt.publish
+    data:
+      topic: pila/solar
+      payload: >
+        {"site_solar_p_W": {{ states('sensor.your_solar_power') | float(0) | round(0) | int }},
+         "site_grid_p_W": {{ states('sensor.your_grid_power') | float(0) | round(0) | int }}}
+mode: single
+```
+
+[`examples/automations/send-solar-to-pila.yaml`](./examples/automations/send-solar-to-pila.yaml)
 
 ## Example Lovelace cards
 
@@ -322,6 +381,8 @@ mode: single
 
 **Outlet switch doesn't change state when I toggle it.** Relay commands are fire-and-forget; state reflects what Pila reports back. Give it 2–3 seconds. If it never changes, check whether a Pila-side schedule or timer is fighting your command.
 
+**Pila says "Waiting for solar data from Home Assistant."** Check that the solar automation is turned on and that your solar sensor has a number, not `unavailable`. In Home Assistant, **Settings → Devices & services → MQTT → Configure → Listen to a topic**, subscribe to `pila/solar`. You should see a reading every 10 seconds.
+
 **Disconnecting from Home Assistant.** Tap **Disconnect** on the Pila Home Assistant screen. The MQTT device goes offline in HA; the entities remain in HA's registry until you delete the device manually under **Settings → Devices & services → MQTT**.
 
 For anything else, [open an issue](https://github.com/PilaEnergy/pila-home-assistant/issues) with your Pila firmware version, Home Assistant version, broker, and what you've tried.
@@ -337,6 +398,7 @@ For users who want to bypass HA discovery and consume topics directly.
 | Availability (published by Pila, also the LWT) | `pila/availability/{device_id}` (`online` / `offline`) | yes |
 | HA Core birth/will (subscribed by Pila) | `homeassistant/status` | — |
 | Commands (subscribed by Pila) | `pila/switch/outlet/{device_id}` | — |
+| Solar readings (subscribed by Pila) | `pila/solar` | no |
 
 State messages are published at QoS 2. The discovery config is re-published every time Pila connects to the broker AND every time Home Assistant Core publishes `online` on `homeassistant/status`, so HA Core restarts auto-recover without any user action.
 
