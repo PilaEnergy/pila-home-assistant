@@ -148,7 +148,11 @@ The Energy Dashboard uses cumulative counters, not instantaneous power. Don't wi
 
 ## Solar readings from Home Assistant
 
-If Home Assistant already knows how much your solar panels produce, Pila can use it to charge from your excess solar. Home Assistant sends the readings to Pila every 10 seconds with a blueprint. Every Pila connected to this Home Assistant receives them.
+**This is how your Pila works with almost any solar or battery system.** Pila connects to Enphase directly. For everything else, check whether your system is already on your network and shows up in Home Assistant. That covers inverters like SolarEdge, Fronius, or SMA, battery systems like Tesla Powerwall, EG4, or FranklinWH, and energy monitors like Sense or Shelly. If it does, Home Assistant can pass its live solar production to your Pila, so your Pila can charge from your excess solar.
+
+Anything that reports current solar power in W or kW works. Integrations that only report daily energy in kWh won't.
+
+Home Assistant sends the readings to Pila every 10 seconds with a blueprint. Every Pila connected to this Home Assistant receives them.
 
 ### 1. Import the blueprint
 
