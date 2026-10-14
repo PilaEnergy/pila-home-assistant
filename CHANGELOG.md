@@ -7,6 +7,11 @@ All notable changes to the Pila Home Assistant integration.
 ### Added
 - Initial public documentation.
 
+## October 14, 2026
+
+### Changed
+- Home Assistant settings are shared across all the Pilas in your home. **Save & Connect**, **Disconnect**, and **Forget Home Assistant** on any Pila apply to every Pila right away.
+
 ## 1.2
 
 ### Added

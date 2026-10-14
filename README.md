@@ -56,6 +56,8 @@ On your Pila:
 
 The status indicator turns green when connected. The connection persists across reboots.
 
+**Have more than one Pila?** You only need to do this once, on any Pila. It securely shares your Home Assistant settings with every other Pila in your home, and they all connect right away. Each Pila shows up in Home Assistant as its own device. A Pila you add later picks up the settings as soon as it joins your other Pilas.
+
 > 💡 **Optional: dedicated HA user.** For tighter security, create a non-admin HA user just for Pila (**Settings → People → Users → Add User**) and use those credentials in step 3. Your normal credentials work fine otherwise.
 
 ### 3. Verify
@@ -322,7 +324,7 @@ mode: single
 
 **Outlet switch doesn't change state when I toggle it.** Relay commands are fire-and-forget; state reflects what Pila reports back. Give it 2–3 seconds. If it never changes, check whether a Pila-side schedule or timer is fighting your command.
 
-**Disconnecting from Home Assistant.** Tap **Disconnect** on the Pila Home Assistant screen. The MQTT device goes offline in HA; the entities remain in HA's registry until you delete the device manually under **Settings → Devices & services → MQTT**.
+**Disconnecting from Home Assistant.** Tap **Disconnect** on the Pila Home Assistant screen. The MQTT device goes offline in HA; the entities remain in HA's registry until you delete the device manually under **Settings → Devices & services → MQTT**. If you have more than one Pila, **Disconnect** on any Pila disconnects all of them, and **Forget Home Assistant** clears the settings from all of them.
 
 For anything else, [open an issue](https://github.com/PilaEnergy/pila-home-assistant/issues) with your Pila firmware version, Home Assistant version, broker, and what you've tried.
 
