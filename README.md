@@ -324,7 +324,9 @@ mode: single
 
 **Outlet switch doesn't change state when I toggle it.** Relay commands are fire-and-forget; state reflects what Pila reports back. Give it 2–3 seconds. If it never changes, check whether a Pila-side schedule or timer is fighting your command.
 
-**Disconnecting from Home Assistant.** Tap **Disconnect** on the Pila Home Assistant screen. The MQTT device goes offline in HA; the entities remain in HA's registry until you delete the device manually under **Settings → Devices & services → MQTT**. If you have more than one Pila, **Disconnect** on any Pila disconnects all of them, and **Forget Home Assistant** clears the settings from all of them.
+**Disconnecting from Home Assistant.** Tap **Disconnect** on the Pila Home Assistant screen. The MQTT device goes offline in HA; the entities remain in HA's registry until you delete the device manually under **Settings → Devices & services → MQTT**.
+
+**Disconnecting with more than one Pila.** **Disconnect** on any Pila disconnects all the Pilas in your home, and **Forget Home Assistant** clears the settings from all of them.
 
 For anything else, [open an issue](https://github.com/PilaEnergy/pila-home-assistant/issues) with your Pila firmware version, Home Assistant version, broker, and what you've tried.
 
