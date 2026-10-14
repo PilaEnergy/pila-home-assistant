@@ -118,6 +118,31 @@ For each AC and USB-C outlet:
 
 Renaming an outlet in the Pila app updates the friendly name in HA but **does not change the entity_id**. Use the device's **⋮ → Recreate entity IDs** menu in HA (2025.6+) to regenerate them.
 
+### Temperatures
+
+| Name | Unit | Description |
+|---|---|---|
+| Battery Max Temperature | °C | Warmest cell in the battery pack. |
+| Battery Min Temperature | °C | Coolest cell in the battery pack. |
+| Internal Max Temperature | °C | Warmest reading across the battery and power electronics inside your Pila. |
+| CPU Temperature | °C | Your Pila's processor. |
+
+Home Assistant shows temperatures in the unit set under **Settings → System → General**, so you may see °F.
+
+### Fridge and freezer sensors (one set per paired sensor)
+
+For each Pila fridge or freezer sensor paired to an appliance in the Pila app:
+
+| Entity | Unit | Description |
+|---|---|---|
+| `{appliance name} fridge temperature` | °F | Temperature inside the fridge. |
+| `{appliance name} fridge humidity` | % | Humidity inside the fridge. |
+| `{appliance name} fridge light` | lx | Light level inside the fridge. Jumps when the door opens. |
+
+A freezer sensor adds the same three entities, named `{appliance name} freezer ...`. If a sensor stops reporting, its entities show **Unknown** until it comes back.
+
+A sensor you pair after Pila connects to Home Assistant shows up the next time Pila republishes its discovery config, for example after a Home Assistant restart.
+
 ### Controls
 
 | Name | Type | Values | Description |

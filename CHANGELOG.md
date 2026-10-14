@@ -5,6 +5,8 @@ All notable changes to the Pila Home Assistant integration.
 ## Unreleased
 
 ### Added
+- Temperature sensors: **Battery Max Temperature**, **Battery Min Temperature**, **Internal Max Temperature**, and **CPU Temperature**.
+- Fridge and freezer sensor entities: temperature, humidity, and light for each Pila sensor paired to an appliance.
 - Initial public documentation.
 
 ## October 14, 2026
