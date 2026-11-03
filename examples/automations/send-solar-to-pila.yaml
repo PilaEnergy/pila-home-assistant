@@ -1,0 +1,17 @@
+# Send solar production and grid power to Pila every 10 seconds.
+# The blueprint in blueprints/automation/pila does the same without editing YAML.
+# Paste into Settings → Automations → Add → Edit in YAML.
+
+alias: Send solar readings to Pila
+description: Send current solar production and grid power to Pila
+trigger:
+  - platform: time_pattern
+    seconds: "/10"
+action:
+  - service: mqtt.publish
+    data:
+      topic: pila/solar
+      payload: >
+        {"site_solar_p_W": {{ states('sensor.your_solar_power') | float(0) | round(0) | int }},
+         "site_grid_p_W": {{ states('sensor.your_grid_power') | float(0) | round(0) | int }}}
+mode: single

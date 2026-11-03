@@ -6,6 +6,7 @@ All notable changes to the Pila Home Assistant integration.
 
 ### Added
 - Initial public documentation.
+- **Send solar readings to Pila** blueprint. Home Assistant sends your solar production, and optionally your grid power, to Pila on `pila/solar`, so Pila can charge from your excess solar.
 
 ## October 14, 2026
 
